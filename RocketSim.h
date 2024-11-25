@@ -9,22 +9,22 @@ private:
     double acceleration; // (m/s^2)
     double mass; // (kg)
     double thrust; // (N)
-    double drag; // (non-dimensional)
+    double dragcoeff; // (non-dimensional)
+    double burnTime; // (s)#
+    double specificImpulse; // (s)
 
 public:
     // constructor
-    Rocket(double initialPosition, double initialVelocity, double initialMass);
+    Rocket(double initialMass, double T, double CD, double Tb, double Isp);
 
     // getter functions
     double getPosition() const;
     double getVelocity() const;
     double getAcceleration() const;
+    double getMass() const;
 
     // state update
     void update(double deltaTime);
-
-    // set thrust
-    void setThrust(double thrustValue);
 };
 
 #endif
