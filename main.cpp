@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include "RocketSim.h"
 
 int main() {
@@ -9,17 +10,22 @@ int main() {
     // initialise (m, T, CD, Tb)
     Rocket rocket(60.0, 4000.0, 0.5, 6.0, 200);
 
+    // set up output file
+    std::ofstream file("flight_data.txt");
+
     // actually run the simulation (and stop if rocket hits the ground)
     for (double t = 0.0; t < maxTime && rocket.getPosition() >= 0; t += timeStep) {
         rocket.update(timeStep);
 
         // print state
-        std::cout << "Time: " << t 
-                  << " s, Position: " << rocket.getPosition() 
-                  << " m, Velocity: " << rocket.getVelocity() 
-                  << " m/s, Acceleration: " << rocket.getAcceleration() 
-                  << " m/s^2, Mass: " << rocket.getMass() << std::endl;
+        file << t 
+                  << ", " << rocket.getPosition() 
+                  << ", " << rocket.getVelocity() 
+                  << ", " << rocket.getAcceleration() 
+                  << ", " << rocket.getMass() << std::endl;
     }
+
+    file.close();
 
     return 0;
 }

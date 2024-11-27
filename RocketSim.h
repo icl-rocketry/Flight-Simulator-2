@@ -10,7 +10,7 @@ private:
     double mass; // (kg)
     double thrust; // (N)
     double dragcoeff; // (non-dimensional)
-    double burnTime; // (s)#
+    double burnTime; // (s)
     double specificImpulse; // (s)
 
 public:
