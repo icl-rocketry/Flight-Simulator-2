@@ -2,8 +2,8 @@
 #include <cmath>
 
 // constructor
-Rocket::Rocket(double initialMass, double T, double CD, double Tb, double Isp)
-    : position(0.0), velocity(0.0), acceleration(0.0), mass(initialMass), thrust(T), dragcoeff(CD), burnTime(Tb), specificImpulse(Isp) {}
+Rocket::Rocket(double initialMass, double T, double Cd, double Tb, double Isp)
+    : position(0.0), velocity(0.0), acceleration(0.0), mass(initialMass), thrust(T), dragcoeff(Cd), burnTime(Tb), specificImpulse(Isp) {}
 
 // getter functions
 double Rocket::getPosition() const { return position; }
