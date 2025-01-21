@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include "RocketSim.h"
 
 int main() {
@@ -23,33 +24,33 @@ int main() {
         rocket.update(timeStep);
 
         // get values
-        double z = rocket.getPosition();
-        double v = rocket.getVelocity();
-        double a = rocket.getAcceleration();
+        std::vector<double> pos = rocket.getPosition();
+        std::vector<double> vel = rocket.getVelocity();
+        std::vector<double> acc = rocket.getAcceleration();
 
         // print state
         file << t 
-                  << ", " << z
-                  << ", " << v
-                  << ", " << a
+                  << ", " << pos
+                  << ", " << vel
+                  << ", " << acc
                   << ", " << rocket.getMass() << std::endl;
 
-        // update apogee etc.
-        if (z > apogee) {
-            apogee = z;
+        // update apogee and other key flight values
+        if (pos > apogee) {
+            apogee = pos;
         }
-        if (v > maxSpeed) {
-            maxSpeed = v;
+        if (vel > maxSpeed) {
+            maxSpeed = vel;
         }
-        if (a > maxAcceleration) {
-            maxAcceleration = a;
+        if (acc > maxAcceleration) {
+            maxAcceleration = acc;
         }
     }
 
     file.close();
 
     // display important values
-    std::cout.precision(4);
+    std::cout.precision(3);
     std::cout << "Apogee: " << apogee << " m" << std::endl;
     std::cout << "Max. Speed: " << maxSpeed << " m/s" << std::endl;
     std::cout << "Max. Acceleration: " << maxAcceleration << " m/s^2" << std::endl;

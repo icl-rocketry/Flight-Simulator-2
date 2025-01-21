@@ -1,14 +1,17 @@
 #include "RocketSim.h"
+#include "RK4.h"
+#include "vector.h"
 #include <cmath>
+#include <vector>
 
 // constructor
 Rocket::Rocket(double initialMass, double T, double Cd, double Tb, double Isp)
     : position(0.0), velocity(0.0), acceleration(0.0), mass(initialMass), thrust(T), dragcoeff(Cd), burnTime(Tb), specificImpulse(Isp) {}
 
 // getter functions
-double Rocket::getPosition() const { return position; }
-double Rocket::getVelocity() const { return velocity; }
-double Rocket::getAcceleration() const { return acceleration; }
+std::vector<double> Rocket::getPosition() const { return position; }
+std::vector<double> Rocket::getVelocity() const { return velocity; }
+std::vector<double> Rocket::getAcceleration() const { return acceleration; }
 double Rocket::getMass() const { return mass; }
 
 // state update function
@@ -22,9 +25,10 @@ void Rocket::update(double deltaTime) {
     }
 
     // very basic physics model
-    double drag = -0.5 * 1.225 * 0.03 * dragcoeff * velocity * abs(velocity);
-    double netForce = thrust + drag - 9.81 * mass;
-    acceleration = netForce / mass;
+    double rho = 1.225 * exp(-position / 10400); // simple density lapse model
+    std::vector<double> drag = -0.5 * rho * 0.03 * dragcoeff * velocity * abs(velocity); // absolute value ensures drag opposes velocity
+    std::vector<double> netForce = thrust + drag - 9.81 * mass;
+    std::vector<double> acceleration = netForce / mass;
 
     // explicit euler integration
     velocity += acceleration * deltaTime;
