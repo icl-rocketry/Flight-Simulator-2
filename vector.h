@@ -18,4 +18,8 @@ std::vector<double> operator*(std::vector<double> v1, const std::vector<double> 
 // vector absolute value
 std::vector<double> abs(std::vector<double> v);
 
+// vector norm
+double norm(std::vector<double> v);
+
+
 #endif
