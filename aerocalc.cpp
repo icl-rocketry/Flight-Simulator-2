@@ -9,23 +9,24 @@
 #include <algorithm>
 #include <string>
 #include <sstream>
+#include <optional>
 
 
 class RegularGridInterpolator {
 public:
-    RegularGridInterpolator(const std::vector<std::vector<double>>& grid_points,
-                            const std::vector<double>& grid_values)
+    RegularGridInterpolator(const std::vector<std::vector<double>>& grid_points, // takes 2x2 vector grid coordinates which is the grid it is interpolating
+                            const std::vector<double>& grid_values) // takes value of every point in the grid
         : grid_points_(grid_points), grid_values_(grid_values), dim_(grid_points.size()) {
-        // Validate dimensions
+        
         
         size_t product = 1;
         for (const auto& dim : grid_points) {
-            product *= dim.size();
+            product *= dim.size(); // dim is number of dimensions of the data 
         }
         
     }
 
-    double interpolate(const std::vector<double>& point) const {
+    double interpolate(const std::vector<double>& point) const { // takes a given point to interpolate 
         // Find indices and interpolation weights for each dimension
         std::vector<int> lower_indices(dim_);
         std::vector<double> weights(dim_);
@@ -41,7 +42,7 @@ public:
 
 private:
     const std::vector<std::vector<double>>& grid_points_;
-    const std::vector<double>& grid_values_;
+    const std::vector<double>& grid_values_; 
     size_t dim_;
 
     // Find bounds and interpolation weight for a single dimension
@@ -85,8 +86,8 @@ private:
 double getValue2D (double x, double y, const std::string& filename) {
 
     std::ifstream inputFile(filename);
-    if (!inputFile.is_open()) {
-        std::cerr << "Error: Could not open the file" << std::endl;
+    if (!inputFile.is_open()) { 
+        std::cerr << "Error: Could not open the file" << std::endl; // if file cant be opened
         return 1;
     }
 
@@ -94,13 +95,13 @@ double getValue2D (double x, double y, const std::string& filename) {
     std::string line;
 
     while (std::getline(filename, line)) {
-        std::istringstream iss(line);
-        std::vector<double> row;
+        std::istringstream iss(line); // creates SS of the line its looking at in the file
+        std::vector<double> row; 
         double value;
         
 
         while (iss >> value) {
-            row.push_back(value);
+            row.push_back(value); // chops up SS and pushes each value individually to data
         }
         data.push_back(row);
     }
@@ -138,47 +139,24 @@ double getValue2D (double x, double y, const std::string& filename) {
     double result = interpolator.interpolate(point); // interp = RegularGridInterpolator((yValues, xValues), dataValues) 
     
     return result; 
-
 }
 
-//def getValue3D(x, y, z, filename):
-    // takes in a file as data
-    // data = genfromtxt(filename, delimiter=",")
-    // iterates across data and filters out not a number data
-    // nanIndices = [i for i, row in enumerate(data) if row[0] != row[0]]
-    // iterates across not a number (which are indicies of the original data) and adds them to a list where there is a jump in the consecutive values greater than 1
-    // jumpIndices = [0] + [nanIndices[i] for i in range(1, len(nanIndices)) if nanIndices[i] - nanIndices[i - 1] > 1]
-    //collects all corresponding values in data to where the jump indicies are greater than the length og the jump indicies list and saves them to dataArrays
-    //dataArrays = [
-        //data[jumpIndices[i] : jumpIndices[i + 1] if i + 1 < len(jumpIndices) else None, :]
-        //for i in range(len(jumpIndices) - 1)
-    //] + [data[jumpIndices[-1] :, :]]
-    // iterates through data and finds for each sub array the zeroth indexed subarray and the 1st indexed array within that and saves it to Z files
-    //zValues = [dataArray[0, 1] for dataArray in dataArrays]
-    
-    
-    //aboveIndex = next((i for i, val in enumerate(zValues) if val > z), None)
-    //belowIndex = aboveIndex - 1 if aboveIndex is not None else None
-    //if z in zValues:
-        //aboveIndex = belowIndex = zValues.index(z)
+std::optional<size_t> findAboveIndex(std::vector<double>& zValues, double z) {
+    for (size_t i = 0; i < zValues.size(); ++i) {
+        if (zValues[i] > z) {
+            return i;  // return the first index where value > z
+        }
+    }
+    return std::nullopt;  // return null if no value is found
+}
 
-    //interpAbove = RegularGridInterpolator(
-        //(dataArrays[aboveIndex][3:, 0], dataArrays[aboveIndex][2, 1:]), dataArrays[aboveIndex][3:, 1:]
-    //)
-    //interpBelow = RegularGridInterpolator(
-        //(dataArrays[belowIndex][3:, 0], dataArrays[belowIndex][2, 1:]), dataArrays[belowIndex][3:, 1:]
-    //)
-
-    //if z in zValues:
-        //return interpAbove([x, y])[0]
-
-    //val = (interpBelow([x, y]) * (zValues[aboveIndex] - z) + interpAbove([x, y]) * (z - zValues[belowIndex])) / (
-        //zValues[aboveIndex] - zValues[belowIndex]
-    //)
-    //return val[0]
-
-
-// write get value 3D
+std::optional<size_t> findBelowIndex(std::vector<double>& zValues, double z, std::optional<size_t> aboveIndex) {
+    if (aboveIndex != std::nullopt) {
+        int aboveIndex;
+        return (aboveIndex - 1); // return the index below aboveIndex as the point from which the function should interpolate below
+    }
+    return std::nullopt; // return null if the value of aboveInex is null
+}
 
 double getValue3D (double x, double y, double z, const std::string& filename) {
 
@@ -188,32 +166,93 @@ double getValue3D (double x, double y, double z, const std::string& filename) {
         return 1;
     
     std::vector<std::vector<std::vector<double>>> data;
-    std::vector<std::vector<double>> currentLayer;
+    std::vector<std::vector<double>> data_2d;
     std::string line;
     
-
-    while (std::getline(filename,line)) {
+    while (std::getline(filename, line)) {
         std::istringstream iss(line);
         std::vector<double> row;
         double value;
-
+        
         while (iss >> value) {
-            if (value == M) {
-                
-            } else {
             row.push_back(value);
-            }
         }
-        currentLayer.push_back(row);
+        data_2d.push_back(row);
+    }
+    }
+
+    inputFile.close();
+
+    std::vector<int> nanIndices;
+
+    // now filter the 2d vector 
+    for (size_t i = 0; i < data_2d.size(); ++i) {
+        if (std::isnan(data_2d[i][0])) {
+            int nancoords[2] = {i,0}; // only checks first column, may need to change this
+            nanIndices.push_back(nancoords);
+        }
+    }
+
+    std::vector<int> jumpIndices;
+    jumpIndices.push_back(0); //jumpIndices inital value = 0
+
+    
+    for (size_t i = 1; i < nanIndices.size(); ++i) {
+        if (nanIndices[i] - nanIndices[i - 1] > 1) {
+            jumpIndices.push_back(nanIndices[i]); // jumpIndices contains the indices of not a number values 
+        }
+    }
+
+    std::vector<std::vector<std::vector<double>>> dataArrays; // create 3d data arrays
+    for (size_t i = 0; i < jumpIndices.size() - 1; ++i) {
+        double start = jumpIndices[i]; // gets first entry of subarray, NOTE: jump indices will show where the subarrays start and end 
+        double end = jumpIndices[i + 1]; // gets last entry to jumpIndices
+
+        std::vector<std::vector<double>> subarray; // define subarray vector
+        for (int row = start; row < end; ++row) { 
+            subarray.push_back(data_2d[row]); // add the value of data, indexed at the value of the first entry of jump indices
+        }
+        dataArrays.push_back(subarray); // add subarray to data array
     }
     
-    filename.close();
-    return data;
+    std::vector<std::vector<double>> lastSubarray; 
+    for (size_t row = jumpIndices.back(); row < data_2d.size(); ++row) {
+        lastSubarray.push_back(data_2d[row]); // last subarray handled seperately for whatever is left
+    }
+    dataArrays.push_back(lastSubarray); // add last subarray to data array
+
+    std::vector<double> zValues; // define zValues
+
+    for (size_t i = 0; i < dataArrays.size(); i++) { // iterate through dataArrays
+        std::vector<std::vector<double>> dataArray = dataArrays[i]; // define data array as one subarray in dataarrays
+        zValues.push_back(dataArray[0,1]); // add the z array in the subarray to zvalues
     }
 
+    auto aboveIndex = findAboveIndex(zValues, z); // define aboveIndex from findAboveIndex function written above
+    auto belowIndex = findBelowIndex(zValues, z, aboveIndex); // define belowIndex from findBelowIndex function written above
 
+
+    if (z == zValues[aboveIndex]) {
+        belowIndex = aboveIndex; // if provided z is within zValues then the exact layer has been located so no need to interpolates between layers
+    }
+    
+    // Create interpolators for the two closest layers when z is not in zvalues 
+    RegularGridInterpolator interpAbove(
+        {dataArrays[aboveIndex][3], dataArrays[aboveIndex][2]}, dataArrays[aboveIndex][3]); // interpolates layer above 
+    RegularGridInterpolator interpBelow(
+        {dataArrays[belowIndex][3], dataArrays[belowIndex][2]}, dataArrays[belowIndex][3]); // interpolates layer below
+    
+    if (z == zValues[aboveIndex]) {
+        return interpAbove.interpolate({x, y}); // if provided z is within zValues then only interpolate 1 layer, if this condition is met then aboveIndex = belowIndex already
+    }
+    
+    double valueBelow = interpBelow.interpolate({x, y});
+    double valueAbove = interpAbove.interpolate({x, y});
+    
+    return ((valueBelow * (zValues[aboveIndex] - z)) + (valueAbove * (z - zValues[belowIndex]))) /
+           (zValues[aboveIndex] - zValues[belowIndex]);
 }
-
+    
 
 // double check what rocket class is called and what outputs are this time
 double getAeroParams(double M, double alpha, double logR, double Cvf, double Cpl, double Ccl, double lfd, double lcd, double lad, double dbd, double L, double D, double sweep, double rcd, double tcd, double spand, double gapd, double led, double ld, double xm, double xml) {
@@ -471,9 +510,7 @@ double getAeroParams(double M, double alpha, double logR, double Cvf, double Cpl
     double Cdwv = 0;  // viscous form drag?
     double Cd = Cdp + Cdw + Cdwv + F * (Cdb + Cd_beta) + Cf;
 
-    return Cn, Cm, xcp, Mq, Cd, Cdp, Cdw, Cdwv, F * (Cdb + Cd_beta), Cf
-
-    
+    return Cn, Cm, xcp, Mq, Cd, Cdp, Cdw, Cdwv, F * (Cdb + Cd_beta), Cf;
 }
 
 
