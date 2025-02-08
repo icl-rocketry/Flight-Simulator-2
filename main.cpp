@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include "RocketSim.h"
+#include "vector.h"
 
 int main() {
     // parameters
@@ -9,7 +10,7 @@ int main() {
     double maxTime = 100.0; // max time (s)
 
     // initialise (m, T, CD, Tb, Isp)
-    Rocket rocket(79.0, 4096.0, 0.5, 10.0, 200);
+    Rocket rocket(79.0, {0, 0, 4096.0}, 0.5, 10.0, 200);
 
     // set up output file
     std::ofstream file("flight_data.txt");
@@ -20,7 +21,7 @@ int main() {
     double maxAcceleration = 0;
 
     // actually run the simulation (and stop if rocket hits the ground)
-    for (double t = 0.0; t < maxTime && rocket.getPosition() >= 0; t += timeStep) {
+    for (double t = 0.0; t < maxTime && rocket.getPosition()[2] >= 0; t += timeStep) {
         rocket.update(timeStep);
 
         // get values
@@ -30,20 +31,20 @@ int main() {
 
         // print state
         file << t 
-                  << ", " << pos
-                  << ", " << vel
-                  << ", " << acc
+                  << ", " << pos[0] << pos[1] << pos[2]
+                  << ", " << vel[0] << vel[1] << vel[2]
+                  << ", " << acc[0] << acc[1] << acc[2]
                   << ", " << rocket.getMass() << std::endl;
 
         // update apogee and other key flight values
-        if (pos > apogee) {
-            apogee = pos;
+        if (pos[2] > apogee) {
+            apogee = pos[2];
         }
-        if (vel > maxSpeed) {
-            maxSpeed = vel;
+        if (norm(vel) > maxSpeed) {
+            maxSpeed = norm(vel);
         }
-        if (acc > maxAcceleration) {
-            maxAcceleration = acc;
+        if (norm(acc) > maxAcceleration) {
+            maxAcceleration = norm(acc);
         }
     }
 
